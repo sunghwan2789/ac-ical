@@ -2,6 +2,7 @@ on:
   push:
     paths:
     - 'sch.ac.kr'
+    - '.github/workflows/sch.ac.kr.yml'
   # schedule:
   #   # 한국 표준시 오후 2시에 2주 간격으로 실행
   #   - cron: '0 5 */14 * *'
