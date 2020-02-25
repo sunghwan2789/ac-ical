@@ -6,7 +6,12 @@
     "start": "parcel src/index.html --open",
     "clean": "rm -rf .cache/ .parcel-cache/ dist/",
     "build": "npm run clean && parcel build src/index.html --no-source-maps",
-    "deploy": "npm run build && gh-pages -d dist --remove '*.js *.css'"
+    "deploy": "npm run build && NODE_DEBUG=gh-pages gh-pages -d dist --remove \"*.{js,css}\""
+  },
+  "targets": {
+    "browser": {
+      "publicUrl": "./"
+    }
   },
   "repository": {
     "type": "git",
