@@ -2,6 +2,7 @@ import React from 'react';
 import useSWR from 'swr';
 import { Link } from 'react-router-dom';
 import { PAGE_PATHS } from '../constants';
+import axios from 'axios';
 
 type ICalDto = {
   updated_at: string;
@@ -22,7 +23,9 @@ function getRecentCalendars(data: ICalDto, count: number = 5) {
 }
 
 export default () => {
-  const { data, error } = useSWR<ICalDto>('ical.json');
+  const { data, error } = useSWR<ICalDto>('ical.json', () =>
+    axios.get<ICalDto>('ical.json').then(r => r.data),
+  );
 
   if (error) {
     return <div>{error}</div>;
