@@ -23,9 +23,7 @@ function getRecentCalendars(data: ICalDto, count: number = 5) {
 }
 
 export default () => {
-  const { data, error } = useSWR<ICalDto>('ical.json', () =>
-    axios.get<ICalDto>('ical.json').then(r => r.data),
-  );
+  const { data, error } = useSWR<ICalDto>('ical.json');
 
   if (error) {
     return <div>{error}</div>;
@@ -40,7 +38,7 @@ export default () => {
       <p>last update: {data.updated_at}</p>
       <ul>
         {getRecentCalendars(data).map(cal => (
-          <li>
+          <li key={cal.path}>
             <Link to={`${PAGE_PATHS.CALENDAR}/${cal.source}`}>
               {cal.name} {Date.parse(cal.updated_at)}
             </Link>
