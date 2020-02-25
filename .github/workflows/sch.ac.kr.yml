@@ -16,14 +16,20 @@ jobs:
           dotnet-version: 3.1.100
       - name: Checkout source branch
         uses: actions/checkout@v2
-      - working-directory: ./sch.ac.kr
-        run: dotnet build --output /app
+        with:
+          path: src
+      - name: Build bot
+        run: dotnet build src/sch.ac.kr
       - name: Checkout destination branch
         uses: actions/checkout@v2
         with:
           ref: gh-pages
-      - run: dotnet /app/sch-academic-calendar.dll ical/sch.ac.kr.ics
-      - run: |
+          path: dist
+      - name: Run bot
+        run: dotnet run src/sch.ac.kr dist/ical/sch.ac.kr.ics
+      - name: Update metafile
+        working-directory: dist
+        run: |
           if [ -n "$(git status --porcelain)" ]; then
             echo "There are changes."
             if [ ! -f "ical.json" ]; then
@@ -41,12 +47,16 @@ jobs:
                 | .data.sch_ac_kr.updated_at |= $now
               ' > ical.json
           fi
-      - run: |
+      - name: Commit changes
+        working-directory: dist
+        run: |
           git config --local user.email 'action@github.com'
           git config --local user.name 'Github Action'
           git add .
           git commit -m 'Sync sch.ac.kr'
-      - uses: ad-m/github-push-action@v0.5.0
+      - name: Push changes
+        working-directory: dist
+        uses: ad-m/github-push-action@v0.5.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
