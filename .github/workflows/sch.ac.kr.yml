@@ -20,6 +20,7 @@ jobs:
           path: src
       - name: Build bot
         run: dotnet build src/sch.ac.kr
+      # TODO: Global lock that queues workflow jobs.
       - name: Checkout destination branch
         uses: actions/checkout@v2
         with:
@@ -41,10 +42,10 @@ jobs:
               --arg now "$(date -u +"%FT%T.000Z")" \
               '
                 .updated_at |= $now
-                | .data.sch_ac_kr.name |= "순천향대학교 학사일정"
-                | .data.sch_ac_kr.path |= "ical/sch.ac.kr.ics"
-                | .data.sch_ac_kr.source |= "sch.ac.kr"
-                | .data.sch_ac_kr.updated_at |= $now
+                | .data."sch.ac.kr".name |= "순천향대학교 학사일정"
+                | .data."sch.ac.kr".path |= "ical/sch.ac.kr.ics"
+                | .data."sch.ac.kr".source |= "sch.ac.kr"
+                | .data."sch.ac.kr".updated_at |= $now
               ' > ical.json
           fi
       - name: Commit changes
