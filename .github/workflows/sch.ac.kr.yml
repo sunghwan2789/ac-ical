@@ -26,7 +26,7 @@ jobs:
           ref: gh-pages
           path: dist
       - name: Run bot
-        run: dotnet run src/sch.ac.kr dist/ical/sch.ac.kr.ics
+        run: dotnet run --project src/sch.ac.kr -- dist/ical/sch.ac.kr.ics
       - name: Update metafile
         working-directory: dist
         run: |
