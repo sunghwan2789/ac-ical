@@ -1,10 +1,9 @@
 {
   "private": true,
   "name": "ac-ical",
-  "proxy": "https://sunghwan2789.github.io/ac-ical/",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel src/index.html --https",
+    "start": "parcel src/index.html",
     "clean": "rm -rf .parcel-cache/ build/ dist/"
   },
   "repository": {
