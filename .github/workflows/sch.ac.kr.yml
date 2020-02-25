@@ -55,8 +55,8 @@ jobs:
           git add .
           git commit -m 'Sync sch.ac.kr'
       - name: Push changes
-        working-directory: dist
         uses: ad-m/github-push-action@v0.5.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
+          directory: dist
