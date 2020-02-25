@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "moduleResolution": "Node",
+    "target": "ES2019",
+    "jsx": "react",
+    "baseUrl": ".",
+    "paths": {
+      "*": ["node_modules/*"],
+      "~/*": ["src/*"]
+    }
+  },
+  "exclude": ["node_modules", "build", ".cache"],
+  "include": ["src/**/*"]
+}
