@@ -14,6 +14,25 @@ namespace sch_academic_calendar
     {
         static readonly HtmlWeb client = new HtmlWeb();
 
+        static async Task<T> RunWithRetries<T>(Func<T> func)
+        {
+            var delays = new[] { 1000, 5000, 10000, 30000, 60000, };
+            var exceptions = new List<Exception>();
+            foreach (var delay in delays)
+            {
+                await Task.Delay(delay);
+                try
+                {
+                    return func();
+                }
+                catch (Exception ex)
+                {
+                    exceptions.Add(ex);
+                }
+            }
+            throw new AggregateException(exceptions);
+        }
+
         static async IAsyncEnumerable<AcademicEvent> GetAcademicSchedules()
         {
             var seedUrl = @"https://homepage.sch.ac.kr/sch/05/05010001.jsp?mode=list&board_no=20110224223754285127";
@@ -27,17 +46,27 @@ namespace sch_academic_calendar
                 {
                     var scheduleUri = new Uri(baseUri, scheduleAnchor.Attributes["href"].DeEntitizeValue);
 
-                    var sdoc = client.Load(scheduleUri);
-                    var contents = sdoc.DocumentNode.SelectNodes("//table//td");
-                    yield return new AcademicEvent
+                    var acevent = await RunWithRetries(() =>
                     {
-                        Url = scheduleUri.ToString(),
-                        Title = contents.ElementAt(0).InnerText,
-                        Begin = DateTime.Parse(contents.ElementAt(1).InnerText),
-                        Content = WebUtility.HtmlDecode(contents.ElementAt(2).InnerText),
-                    };
+                        Console.WriteLine(scheduleUri);
+                        var sdoc = client.Load(scheduleUri);
+                        var contents = sdoc.DocumentNode.SelectNodes("//table//td");
+                        return new AcademicEvent
+                        {
+                            Url = scheduleUri.ToString(),
+                            Title = contents.ElementAt(0).InnerText,
+                            Begin = DateTime.Parse(contents.ElementAt(1).InnerText),
+                            Content = WebUtility.HtmlDecode(contents.ElementAt(2).InnerText),
+                        };
+                    });
 
-                    await Task.Delay(300);
+                    // Ignore events that begin past year
+                    if (acevent.Begin.Year < DateTime.Now.Year)
+                    {
+                        yield break;
+                    }
+
+                    yield return acevent;
                 }
 
                 var next = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'box_pager')]/span/following-sibling::a");
@@ -51,9 +80,16 @@ namespace sch_academic_calendar
             var calendar = new Calendar();
             var dest = args.FirstOrDefault();
 
-            await foreach (var schedule in GetAcademicSchedules())
+            try
             {
-                calendar.Events.Add(schedule.ToCalendarEvent());
+                await foreach (var schedule in GetAcademicSchedules())
+                {
+                    calendar.Events.Add(schedule.ToCalendarEvent());
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex.ToString());
             }
 
             var serializer = new CalendarSerializer(calendar);
