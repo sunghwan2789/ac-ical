@@ -1,5 +1,5 @@
 import React from 'react';
-import RecentCalendars from '~/components/RecentCalendars';
+import RecentCalendars from '../components/RecentCalendars';
 
 export default () => (
   <>

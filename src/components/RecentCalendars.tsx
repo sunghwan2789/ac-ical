@@ -1,7 +1,7 @@
 import React from 'react';
 import useSWR from 'swr';
 import { Link } from 'react-router-dom';
-import { PAGE_PATHS } from '~/constants';
+import { PAGE_PATHS } from '../constants';
 
 type ICalDto = {
   updated_at: string;

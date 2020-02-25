@@ -1,10 +1,11 @@
 {
   "private": true,
   "name": "ac-ical",
-  "main": "src/index.tsx",
+  "proxy": "https://sunghwan2789.github.io/ac-ical/",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "parcel src/index.html"
+    "start": "parcel src/index.html --https",
+    "clean": "rm -rf .parcel-cache/ build/ dist/"
   },
   "repository": {
     "type": "git",
@@ -15,7 +16,7 @@
     "@types/react": "^16.9.22",
     "@types/react-dom": "^16.9.5",
     "@types/react-router-dom": "^5.1.3",
-    "parcel-bundler": "^1.12.4",
+    "parcel": "^2.0.0-alpha.3.2",
     "prettier": "^1.19.1",
     "sass": "^1.26.0",
     "typescript": "^3.8.2"
