@@ -11,7 +11,7 @@ on:
 
 env:
   ICAL_SOURCE: sch.ac.kr
-  ICAL_NAME: '순천향대학교 학사일정'
+  ICAL_NAME: 순천향대학교 학사일정
 
 jobs:
   build:
@@ -40,10 +40,11 @@ jobs:
             echo "Update metadata."
             jq -cn \
               --arg now "$(date -u +"%FT%T.000Z")" \
+              --arg name "$ICAL_NAME" \
               '
                 .updated_at |= $now
                 | .source |= "'$ICAL_SOURCE'"
-                | .name |= "'$ICAL_NAME'"
+                | .name |= $name
                 | .filename |= "ical/'$ICAL_SOURCE'.ics"
               ' > $ICAL_SOURCE.json
           fi
