@@ -11,7 +11,7 @@ on:
 
 env:
   ICAL_SOURCE: sch.ac.kr
-  ICAL_NAME: 순천향대학교 학사일정
+  ICAL_NAME: '순천향대학교 학사일정'
 
 jobs:
   build:
