@@ -28,9 +28,9 @@ jobs:
         with:
           ref: gh-pages
           path: dist
-      - name: Run bot
+      - name: Update iCalendar file
         run: dotnet run --project src/$ICAL_SOURCE -- dist/ical/$ICAL_SOURCE.ics
-      - name: Update metafile
+      - name: Update metadata file
         working-directory: dist
         run: |
           if [ -n "$(git status --porcelain)" ]; then
