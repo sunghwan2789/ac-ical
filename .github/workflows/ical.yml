@@ -1,0 +1,31 @@
+name: Update merged iCalendar metadata
+
+on:
+  push:
+    paths:
+      - ical
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Update metadata file
+        run: |
+          jq -cn \
+            --arg now "$(date -u +"%FT%T.000Z")" \
+            '
+              .updated_at |= $now
+              | .data |= [inputs]
+            ' ical/*.json > ical.json
+      - name: Commit changes
+        run: |
+          git config --local user.email 'action@github.com'
+          git config --local user.name 'Github Action'
+          git add .
+          git commit -m 'Update metadata.'
+      - name: Push changes
+        uses: ad-m/github-push-action@v0.5.0
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
