@@ -19,7 +19,7 @@
     "@types/react-router-dom": "^5.1.3",
     "@types/styled-components": "^5.0.0",
     "del-cli": "^3.0.0",
-    "gh-pages": "^2.2.0",
+    "gh-pages": "github:sunghwan2789/gh-pages#skip-rm-empty",
     "parcel": "^2.0.0-nightly.125",
     "prettier": "^1.19.1",
     "sass": "^1.26.0",
