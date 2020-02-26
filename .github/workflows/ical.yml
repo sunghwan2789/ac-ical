@@ -3,8 +3,8 @@ name: Update merged iCalendar metadata
 on:
   push:
     paths:
-      - ical
       - .github/workflows/ical.yml
+      - 'ical/*'
 
 jobs:
   update:
