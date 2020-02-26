@@ -10,6 +10,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ICAL_SOURCE: sch.ac.kr
     steps:
       - uses: actions/setup-dotnet@v1
         with:
@@ -19,7 +21,7 @@ jobs:
         with:
           path: src
       - name: Build bot
-        run: dotnet build src/sch.ac.kr
+        run: dotnet build src/$ICAL_SOURCE
       # TODO: Global lock that queues workflow jobs.
       - name: Checkout destination branch
         uses: actions/checkout@v2
@@ -27,7 +29,7 @@ jobs:
           ref: gh-pages
           path: dist
       - name: Run bot
-        run: dotnet run --project src/sch.ac.kr -- dist/ical/sch.ac.kr.ics
+        run: dotnet run --project src/$ICAL_SOURCE -- dist/ical/$ICAL_SOURCE.ics
       - name: Update metafile
         working-directory: dist
         run: |
@@ -42,10 +44,10 @@ jobs:
               --arg now "$(date -u +"%FT%T.000Z")" \
               '
                 .updated_at |= $now
-                | .data."sch.ac.kr".name |= "순천향대학교 학사일정"
-                | .data."sch.ac.kr".path |= "ical/sch.ac.kr.ics"
-                | .data."sch.ac.kr".source |= "sch.ac.kr"
-                | .data."sch.ac.kr".updated_at |= $now
+                | .data."'$ICAL_SOURCE'".name |= "순천향대학교 학사일정"
+                | .data."'$ICAL_SOURCE'".path |= "ical/'$ICAL_SOURCE'.ics"
+                | .data."'$ICAL_SOURCE'".source |= "'$ICAL_SOURCE'"
+                | .data."'$ICAL_SOURCE'".updated_at |= $now
               ' > ical.json
           fi
       - name: Commit changes
@@ -54,7 +56,7 @@ jobs:
           git config --local user.email 'action@github.com'
           git config --local user.name 'Github Action'
           git add .
-          git commit -m 'Sync sch.ac.kr'
+          git commit -m 'Sync '$ICAL_SOURCE
       - name: Push changes
         uses: ad-m/github-push-action@v0.5.0
         with:
