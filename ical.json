@@ -1,11 +1,1 @@
-{
-  "updated_at": "2020-02-25T04:13:19.000Z",
-  "data": {
-    "sch.ac.kr": {
-      "name": "순천향대학교 학사일정",
-      "path": "ical/sch.ac.kr.ics",
-      "source": "sch.ac.kr",
-      "updated_at": "2020-02-25T04:13:19.000Z"
-    }
-  }
-}
+{"updated_at":"2020-02-26T23:29:00.358Z","data":[{"updated_at":"2020-02-26T23:22:10.000Z","source":"sch.ac.kr","name":"순천향대학교 학사일정","filename":"ical/sch.ac.kr.ics"}]}
