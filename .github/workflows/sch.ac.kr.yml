@@ -3,8 +3,8 @@ name: Sync sch.ac.kr
 on:
   push:
     paths:
-      - sch.ac.kr
       - .github/workflows/sch.ac.kr.yml
+      - 'sch.ac.kr/**'
   schedule:
     # 한국 표준시 오후 2시에 2주 간격으로 실행
     - cron: '0 5 */14 * *'
@@ -40,7 +40,7 @@ jobs:
           if [ -n "$(git status --porcelain)" ]; then
             echo "Update metadata."
             jq -cn \
-              --arg now "$(date -u +"%FT%T.000Z")" \
+              --arg now "$(date -u +"%FT%T.%3NZ")" \
               --arg name "$ICAL_NAME" \
               '
                 .updated_at |= $now
