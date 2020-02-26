@@ -1,3 +1,5 @@
+name: Sync sch.ac.kr
+
 on:
   push:
     paths:
@@ -7,12 +9,13 @@ on:
     # 한국 표준시 오후 2시에 2주 간격으로 실행
     - cron: '0 5 */14 * *'
 
+env:
+  ICAL_SOURCE: sch.ac.kr
+  ICAL_NAME: 순천향대학교 학사일정
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      ICAL_SOURCE: sch.ac.kr
-      ICAL_NAME: 순천향대학교 학사일정
     steps:
       - uses: actions/setup-dotnet@v1
         with:
@@ -23,7 +26,6 @@ jobs:
           path: src
       - name: Build bot
         run: dotnet build src/$ICAL_SOURCE
-      # TODO: Global lock that queues workflow jobs.
       - name: Checkout destination branch
         uses: actions/checkout@v2
         with:
