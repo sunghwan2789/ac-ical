@@ -139,8 +139,8 @@ namespace sch_academic_calendar
                     .ForEach(i => oldCalendar.Events.Remove(i));
 
                 // Update old events and increase edit count.
-                updatingEvents.Intersect(calendar.Events, hasSameUid).OrderBy(i => i.Uid)
-                    .Zip(calendar.Events.Intersect(updatingEvents, hasSameUid).OrderBy(i => i.Uid))
+                updatingEvents.Intersect(calendar.Events, hasSameUid)
+                    .Select(i => (i, calendar.Events[i.Uid]))
                     .ToList()
                     .ForEach(t =>
                     {
