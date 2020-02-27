@@ -95,12 +95,12 @@ namespace sch_academic_calendar
             // If exception occurs, let me handle grabbed events just before the exception.
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Exception thrown while getting schedules: {ex.Message}\n{ex}");
+                Console.Error.WriteLine($"Exception thrown while getting events: {ex.Message}\n{ex}");
             }
             // Something went wrong!
             if (calendar.Events.Count == 0)
             {
-                Console.Error.WriteLine("There are no schedule. Something went wrong!");
+                Console.Error.WriteLine("There are no event. Something went wrong!");
                 Environment.ExitCode = 1;
                 return;
             }
@@ -115,6 +115,7 @@ namespace sch_academic_calendar
             // Second, fork old calendar and update it using new calendar.
             if (!File.Exists(dest))
             {
+                Console.Error.WriteLine("iCalendar file is clean. Skipping fork...");
                 goto DUMP;
             }
             try
@@ -124,7 +125,12 @@ namespace sch_academic_calendar
                 var oldCalendar = Calendar.Load(await File.ReadAllTextAsync(dest));
 
                 // Filter old events that may need update.
-                var lowerBound = calendar.Events.First(i => oldCalendar.Events[i.Uid] != default);
+                var lowerBound = calendar.Events.FirstOrDefault(i => oldCalendar.Events[i.Uid] != default);
+                if (lowerBound == null)
+                {
+                    Console.Error.WriteLine("Lost the synchronization point event. Skipping fork...");
+                    goto DUMP;
+                }
                 var updatingEvents = oldCalendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
 
                 // Remove removed events in old events.
