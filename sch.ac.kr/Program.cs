@@ -120,8 +120,6 @@ namespace sch_academic_calendar
             }
             try
             {
-                Func<CalendarEvent, CalendarEvent, bool> hasSameUid = (a, b) => a.Uid == b.Uid;
-
                 var oldCalendar = Calendar.Load(await File.ReadAllTextAsync(dest));
 
                 // Filter old events that may need update.
@@ -163,6 +161,8 @@ namespace sch_academic_calendar
 
                 // Swap.
                 calendar = oldCalendar;
+
+                bool hasSameUid(CalendarEvent a, CalendarEvent b) => a.Uid == b.Uid;
             }
             // If the old calendar does not exists or it is corrupted, use new one as a result.
             catch (Exception ex)
