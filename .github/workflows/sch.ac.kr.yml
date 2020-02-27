@@ -14,7 +14,7 @@ env:
   ICAL_NAME: 순천향대학교 학사일정
 
 jobs:
-  build:
+  sync:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/setup-dotnet@v1
