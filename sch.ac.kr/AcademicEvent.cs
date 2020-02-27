@@ -74,9 +74,7 @@ namespace sch_academic_calendar
         /// </summary>
         public string Content { get; set; }
 
-        public override int GetHashCode() =>
-            HttpUtility.ParseQueryString(new Uri(Url).Query)["article_no"]
-                .GetHashCode();
+        public string Id => HttpUtility.ParseQueryString(new Uri(Url).Query)["article_no"];
 
         public CalendarEvent ToCalendarEvent()
         {
@@ -86,7 +84,7 @@ namespace sch_academic_calendar
                 DtStart = new CalDateTime(Begin),
                 DtEnd = new CalDateTime((End ?? Begin).AddDays(1)),
                 Description = Content,
-                Uid = GetHashCode().ToString("x"),
+                Uid = Id,
             };
         }
     }
