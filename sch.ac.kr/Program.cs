@@ -20,10 +20,12 @@ namespace sch_academic_calendar
             var calendar = new Calendar();
             var dest = args.FirstOrDefault();
 
-            var bot = new Bot(new BotOptions
+            var app = new App(new AppOptions
             {
                 FileName = dest,
             });
+
+            var bot = new Bot(new BotOptions());
 
             // First, grab online calendar events.
             try
