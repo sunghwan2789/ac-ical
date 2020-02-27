@@ -6,6 +6,7 @@ using System.Net;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.Serialization;
 
 namespace sch_academic_calendar
@@ -37,9 +38,9 @@ namespace sch_academic_calendar
         {
             var seedUrl = @"https://homepage.sch.ac.kr/sch/05/05010001.jsp?mode=list&board_no=20110224223754285127";
             var baseUri = new Uri(seedUrl);
-            do
+            for (; ; )
             {
-                Console.WriteLine(seedUrl);
+                Console.Error.WriteLine(seedUrl);
                 var doc = client.Load(seedUrl);
 
                 foreach (var scheduleAnchor in doc.DocumentNode.SelectNodes("//table//a"))
@@ -48,7 +49,7 @@ namespace sch_academic_calendar
 
                     var acevent = await RunWithRetries(() =>
                     {
-                        Console.WriteLine(scheduleUri);
+                        Console.Error.WriteLine(scheduleUri);
                         var sdoc = client.Load(scheduleUri);
                         var contents = sdoc.DocumentNode.SelectNodes("//table//td");
                         return new AcademicEvent
@@ -60,8 +61,8 @@ namespace sch_academic_calendar
                         };
                     });
 
-                    // Ignore events that begin past year
-                    if (acevent.Begin.Year < DateTime.Now.Year)
+                    // Ignore events that would not be changed.
+                    if (acevent.Begin < DateTime.Now.AddMonths(-2))
                     {
                         yield break;
                     }
@@ -69,10 +70,15 @@ namespace sch_academic_calendar
                     yield return acevent;
                 }
 
+                // Reached the end page.
                 var next = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'box_pager')]/span/following-sibling::a");
-                seedUrl = next != null ? new Uri(baseUri, next.Attributes["href"].DeEntitizeValue).ToString() : null;
+                if (next == null)
+                {
+                    yield break;
+                }
+
+                seedUrl = new Uri(baseUri, next.Attributes["href"].DeEntitizeValue).ToString();
             }
-            while (!string.IsNullOrEmpty(seedUrl));
         }
 
         static async Task Main(string[] args)
@@ -80,29 +86,87 @@ namespace sch_academic_calendar
             var calendar = new Calendar();
             var dest = args.FirstOrDefault();
 
+            // First, grab online calendar events.
             try
             {
-                await foreach (var schedule in GetAcademicSchedules())
-                {
-                    calendar.Events.Add(schedule.ToCalendarEvent());
-                }
+                await GetAcademicSchedules().Reverse()
+                    .ForEachAsync(i => calendar.Events.Add(i.ToCalendarEvent()));
             }
+            // If exception occurs, let me handle grabbed events just before the exception.
             catch (Exception ex)
             {
-                Console.WriteLine(ex.ToString());
+                Console.Error.WriteLine($"Exception thrown while getting schedules: {ex.Message}\n{ex}");
+            }
+            // Something went wrong!
+            if (calendar.Events.Count == 0)
+            {
+                Console.Error.WriteLine("There are no schedule. Something went wrong!");
+                Environment.ExitCode = 1;
+                return;
             }
 
-            var serializer = new CalendarSerializer(calendar);
-            if (dest != null)
+            // If no dest specified, dump iCalendar data to standard output and exit.
+            if (dest == null)
             {
-                using var fs = File.OpenWrite(dest);
-                using var sw = new StreamWriter(fs);
-                sw.Write(serializer.SerializeToString());
+                Console.WriteLine(new CalendarSerializer(calendar).SerializeToString());
+                return;
             }
-            else
+
+            // Second, fork old calendar and update it using new calendar.
+            if (!File.Exists(dest))
             {
-                Console.WriteLine(serializer.SerializeToString());
+                goto DUMP;
             }
+            try
+            {
+                Func<CalendarEvent, CalendarEvent, bool> hasSameUid = (a, b) => a.Uid == b.Uid;
+
+                var oldCalendar = Calendar.Load(await File.ReadAllTextAsync(dest));
+
+                // Filter old events that may need update.
+                var lowerBound = calendar.Events.First(i => oldCalendar.Events[i.Uid] != default);
+                var updatingEvents = oldCalendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
+
+                // Remove removed events in old events.
+                updatingEvents.Except(calendar.Events, hasSameUid)
+                    .ToList()
+                    .ForEach(i => oldCalendar.Events.Remove(i));
+
+                // Update old events and increase edit count.
+                updatingEvents.Intersect(calendar.Events, hasSameUid).OrderBy(i => i.Uid)
+                    .Zip(calendar.Events.Intersect(updatingEvents, hasSameUid).OrderBy(i => i.Uid))
+                    .ToList()
+                    .ForEach(t =>
+                    {
+                        var (oldEvent, newEvent) = t;
+                        if (!oldEvent.Equals(newEvent))
+                        {
+                            oldEvent.Summary = newEvent.Summary;
+                            oldEvent.DtStart = newEvent.DtStart;
+                            oldEvent.DtEnd = newEvent.DtEnd;
+                            oldEvent.Description = newEvent.Description;
+                            oldEvent.DtStamp = newEvent.DtStamp;
+                            oldEvent.Sequence++;
+                        }
+                    });
+
+                // Add new events.
+                calendar.Events.Except(updatingEvents, hasSameUid)
+                    .ToList()
+                    .ForEach(i => oldCalendar.Events.Add(i));
+
+                // Swap.
+                calendar = oldCalendar;
+            }
+            // If the old calendar does not exists or it is corrupted, use new one as a result.
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exception thrown while reading old calendar: {ex.Message}\n{ex}");
+            }
+
+        DUMP:
+            // Dump iCalendar data to dest and exit.
+            await File.WriteAllTextAsync(dest, new CalendarSerializer(calendar).SerializeToString());
         }
     }
 }
