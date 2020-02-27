@@ -35,25 +35,12 @@ jobs:
       - name: Update iCalendar file
         run: dotnet run --project src/$ICAL_SOURCE -- dist/ical/$ICAL_SOURCE.ics
       - name: Update metadata file
-        working-directory: dist/ical
-        run: |
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "Update metadata."
-            jq -cn \
-              --arg now "$(date -u +"%FT%T.%3NZ")" \
-              --arg name "$ICAL_NAME" \
-              '
-                .updated_at |= $now
-                | .source |= "'$ICAL_SOURCE'"
-                | .name |= $name
-                | .filename |= "ical/'$ICAL_SOURCE'.ics"
-              ' > $ICAL_SOURCE.json
-          fi
+        run: dist/update-ical.sh
       - name: Commit and push changes
-        working-directory: dist
         run: |
           git config --local user.email 'action@github.com'
           git config --local user.name 'Github Action'
           git add .
           git commit -m "Sync $ICAL_SOURCE"
           git push
+        working-directory: dist
