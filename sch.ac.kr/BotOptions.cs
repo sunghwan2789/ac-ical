@@ -27,7 +27,7 @@ namespace sch_academic_calendar
         /// <remarks>
         /// Overrides <see cref="InputFilename"/> and <see cref="OutputFilename"/>.
         /// </remarks>
-        public string? Filename { get; set; }
+        public string? FileName { get; set; }
 
         /// <summary>
         /// Flag to load the original iCalendar or not.
