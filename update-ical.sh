@@ -3,7 +3,9 @@ set -euo pipefail
 
 cd "${0%/*}"
 
-if [ -n "$(git status --porcelain)" ]; then
+if [ -z "$(git status --porcelain)" ]; then
+  echo "Already up-to-date."
+else
   echo "Update metadata."
   jq -cn \
     --arg now "$(date -u +"%FT%T.%3NZ")" \
@@ -14,4 +16,5 @@ if [ -n "$(git status --porcelain)" ]; then
       | .name |= $name
       | .filename |= "ical/'$ICAL_SOURCE'.ics"
     ' > ical/$ICAL_SOURCE.json
+  echo "Wrote metadata to ical/$ICAL_SOURCE.json"
 fi
