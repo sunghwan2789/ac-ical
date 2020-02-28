@@ -23,25 +23,16 @@ namespace sch_academic_calendar
             var app = new App(new AppOptions
             {
                 FileName = dest,
-            });
-
-            var bot = new Bot(new BotOptions());
+            }, new Bot(new BotOptions()));
 
             // First, grab online calendar events.
             try
             {
-                await bot.GetCalendarEventsAsync()
-                    .ForEachAsync(i => calendar.Events.Add(i));
+                calendar = await app.GetOnlineCalendarAsync();
             }
-            // If exception occurs, let me handle grabbed events just before the exception.
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Exception thrown while getting events: {ex.Message}\n{ex}");
-            }
-            // Something went wrong!
-            if (calendar.Events.Count == 0)
-            {
-                Console.Error.WriteLine("There are no event. Something went wrong!");
+                Console.Error.WriteLine($"Exception thrown while getting online calendar: {ex.Message}\n{ex}");
                 Environment.ExitCode = 1;
                 return;
             }

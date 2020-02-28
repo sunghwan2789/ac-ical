@@ -13,11 +13,33 @@ namespace sch_academic_calendar
 {
     class App
     {
-        public App(AppOptions options)
+        public App(AppOptions options, Bot bot)
         {
             Options = options;
+            Bot = bot;
         }
 
         private AppOptions Options { get; }
+        private Bot Bot { get; }
+
+        public async Task<Calendar> GetOnlineCalendarAsync()
+        {
+            var calendar = new Calendar();
+            try
+            {
+                await Bot.GetCalendarEventsAsync().ForEachAsync(calendar.Events.Add);
+            }
+            // If exception occurs, just use some events we got before the exception.
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exception thrown while getting events: {ex.Message}\n{ex}");
+            }
+            // Having no events is weired.
+            if (!calendar.Events.Any())
+            {
+                throw new Exception("There are no events. Something went wrong?");
+            }
+            return calendar;
+        }
     }
 }
