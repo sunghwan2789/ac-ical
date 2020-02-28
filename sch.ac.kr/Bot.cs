@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
+using Ical.Net;
 using Ical.Net.CalendarComponents;
 
 namespace sch_academic_calendar
@@ -17,6 +18,26 @@ namespace sch_academic_calendar
 
         private BotOptions Options { get; }
         private HtmlWeb Client { get; } = new HtmlWeb();
+
+        public async Task<Calendar> GetCalendarAsync()
+        {
+            var calendar = new Calendar();
+            try
+            {
+                await GetCalendarEventsAsync().ForEachAsync(calendar.Events.Add);
+            }
+            // If it fails, just warn the reason and use some events we got before the exception.
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Exception thrown while getting events: {ex.Message}\n{ex}");
+            }
+            // Having no events is weired.
+            if (!calendar.Events.Any())
+            {
+                throw new Exception("There are no events. Something went wrong?");
+            }
+            return calendar;
+        }
 
         public IAsyncEnumerable<CalendarEvent> GetCalendarEventsAsync() =>
             GetCalenderEventsExAsync().Reverse();

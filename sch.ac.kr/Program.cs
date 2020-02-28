@@ -12,13 +12,14 @@ namespace sch_academic_calendar
             var manager = new Manager(new ManagerOptions
             {
                 FileName = args.FirstOrDefault(),
-            }, new Bot(new BotOptions()));
+            });
+            var bot = new Bot(new BotOptions());
 
             // First, get an online calendar.
             Calendar incoming;
             try
             {
-                incoming = await manager.GetOnlineCalendarAsync();
+                incoming = await bot.GetCalendarAsync();
             }
             // An online calendar is required. Abort.
             catch (Exception ex)
