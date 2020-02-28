@@ -26,7 +26,7 @@ namespace sch_academic_calendar
             {
                 await Bot.GetCalendarEventsAsync().ForEachAsync(calendar.Events.Add);
             }
-            // If exception occurs, just use some events we got before the exception.
+            // If it fails, just warn the reason and use some events we got before the exception.
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Exception thrown while getting events: {ex.Message}\n{ex}");
@@ -39,7 +39,7 @@ namespace sch_academic_calendar
             return calendar;
         }
 
-        public bool ShouldSync() =>
+        public bool ShouldUpdate() =>
             Options.LoadInput
             && File.Exists(Options.FileName ?? Options.InputFileName);
 
@@ -53,13 +53,13 @@ namespace sch_academic_calendar
             await writer.WriteAsync(new CalendarSerializer(calendar).SerializeToString());
         }
 
-        public async Task<Calendar> GetOfflineCalendarAsync()
+        public async Task<Calendar> GetLocalCalendarAsync()
         {
             var filename = Options.FileName ?? Options.InputFileName;
             return Calendar.Load(await File.ReadAllTextAsync(filename));
         }
 
-        public void Sync(Calendar calendar, Calendar incoming)
+        public void Merge(Calendar incoming, Calendar calendar)
         {
             // Filter old events that may need update.
             var lowerBound = incoming.Events.FirstOrDefault(i => calendar.Events[i.Uid] != null);

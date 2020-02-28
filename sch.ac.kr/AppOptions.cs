@@ -1,15 +1,14 @@
 using System;
-using Ical.Net.CalendarComponents;
 
 namespace sch_academic_calendar
 {
     class AppOptions
     {
         /// <summary>
-        /// Filename of the original iCalendar.
+        /// Filename of the old iCalendar.
         /// </summary>
         /// <remarks>
-        /// If this is <c>null</c>, <see cref="Bot"/> will not load the original iCalendar.
+        /// If this is <c>null</c>, <see cref="App"/> will not load the old iCalendar.
         /// </remarks>
         public string? InputFileName { get; set; }
 
@@ -17,7 +16,7 @@ namespace sch_academic_calendar
         /// Filename to save the new iCalendar.
         /// </summary>
         /// <remarks>
-        /// If this is <c>null</c>, <see cref="Bot"/> will write the new iCalendar to stdout.
+        /// If this is <c>null</c>, <see cref="App"/> will write the new iCalendar to stdout.
         /// </remarks>
         public string? OutputFileName { get; set; }
 
@@ -25,13 +24,16 @@ namespace sch_academic_calendar
         /// Filename of the iCalendar to be synchronized.
         /// </summary>
         /// <remarks>
-        /// Overrides <see cref="InputFilename"/> and <see cref="OutputFilename"/>.
+        /// Overrides <see cref="InputFileName"/> and <see cref="OutputFileName"/>.
         /// </remarks>
         public string? FileName { get; set; }
 
         /// <summary>
-        /// Flag to load the original iCalendar or not.
+        /// Flag to load the old iCalendar or not.
         /// </summary>
+        /// <remarks>
+        /// If this is <c>false</c>, <see cref="InputFileName"/> will be ignored.
+        /// </remarks>
         public bool LoadInput { get; set; } = true;
     }
 }

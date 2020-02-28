@@ -1,10 +1,10 @@
-using System.Collections.Generic;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Ical.Net.CalendarComponents;
-using System.Threading.Tasks;
-using System.Net;
 
 namespace sch_academic_calendar
 {

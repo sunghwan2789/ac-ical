@@ -9,19 +9,18 @@ namespace sch_academic_calendar
     {
         static async Task Main(string[] args)
         {
-            var dest = args.FirstOrDefault();
-
             var app = new App(new AppOptions
             {
-                FileName = dest,
+                FileName = args.FirstOrDefault(),
             }, new Bot(new BotOptions()));
 
-            // First, grab online calendar events.
-            Calendar calendar;
+            // First, get an online calendar.
+            Calendar incoming;
             try
             {
-                calendar = await app.GetOnlineCalendarAsync();
+                incoming = await app.GetOnlineCalendarAsync();
             }
+            // An online calendar is required. Abort.
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Exception thrown while getting online calendar: {ex.Message}\n{ex}");
@@ -29,30 +28,29 @@ namespace sch_academic_calendar
                 return;
             }
 
-            if (!app.ShouldSync())
+            // If we don't need update, save it and exit.
+            if (!app.ShouldUpdate())
             {
-                goto DUMP;
+                await app.SaveCalendarAsync(incoming);
+                return;
             }
 
-            // Second, fork old calendar and update it using new calendar.
+            // Second, get a local calendar.
+            Calendar calendar;
             try
             {
-                var oldCalendar = await app.GetOfflineCalendarAsync();
-
-                app.Sync(oldCalendar, calendar);
-
-                // Swap.
-                calendar = oldCalendar;
-
+                calendar = await app.GetLocalCalendarAsync();
             }
-            // If the old calendar does not exists or it is corrupted, use new one as a result.
+            // Corrupted, save the online calendar and exit.
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Exception thrown while reading old calendar: {ex.Message}\n{ex}");
+                await app.SaveCalendarAsync(incoming);
+                return;
             }
 
-        DUMP:
-            // Dump iCalendar data to dest and exit.
+            // Third, merge the online calendar into the local calendar.
+            app.Merge(incoming, calendar);
             await app.SaveCalendarAsync(calendar);
         }
     }
