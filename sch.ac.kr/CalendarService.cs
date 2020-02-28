@@ -2,10 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using System.Web;
 using HtmlAgilityPack;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
+using Ical.Net.DataTypes;
 
 namespace sch_academic_calendar
 {
@@ -48,54 +51,98 @@ namespace sch_academic_calendar
             var baseUri = new Uri(seedUrl);
             for (; ; )
             {
-                var doc = await RunWithRetriesAsync(() =>
+                var document = await RunWithRetriesAsync(() =>
                 {
                     Console.Error.WriteLine(seedUrl);
                     return Client.Load(seedUrl);
                 });
 
-                foreach (var scheduleAnchor in doc.DocumentNode.SelectNodes("//table//a"))
+                foreach (var eventAnchor in document.DocumentNode.SelectNodes("//table//a"))
                 {
-                    var eventUrl = new Uri(baseUri, scheduleAnchor.Attributes["href"].DeEntitizeValue).ToString();
+                    var eventUrl = new Uri(baseUri, eventAnchor.Attributes["href"].DeEntitizeValue).ToString();
 
-                    var acevent = await RunWithRetriesAsync(() =>
+                    var evnt = await RunWithRetriesAsync(() =>
                     {
                         Console.Error.WriteLine(eventUrl);
                         return GetEvent(eventUrl);
                     });
 
                     // Ignore events that would not be changed.
-                    if ((acevent.DtStart.Value < Options.MinimumDtStart)
-                        || (DateTime.Today.Subtract(acevent.DtStart.Value) >= Options.MinimumElapsedTimeSinceDtStartToToday))
+                    if ((evnt.DtStart.Value < Options.MinimumDtStart)
+                        || (DateTime.Today.Subtract(evnt.DtStart.Value) >= Options.MinimumElapsedTimeSinceDtStartToToday))
                     {
                         yield break;
                     }
 
-                    yield return acevent;
+                    yield return evnt;
                 }
 
                 // Reached the end page.
-                var next = doc.DocumentNode.SelectSingleNode("//div[contains(@class, 'box_pager')]/span/following-sibling::a");
-                if (next == null)
+                var nextAnchor = document.DocumentNode.SelectSingleNode("//div[contains(@class, 'box_pager')]/span/following-sibling::a");
+                if (nextAnchor == null)
                 {
                     yield break;
                 }
 
-                seedUrl = new Uri(baseUri, next.Attributes["href"].DeEntitizeValue).ToString();
+                seedUrl = new Uri(baseUri, nextAnchor.Attributes["href"].DeEntitizeValue).ToString();
             }
         }
 
         public CalendarEvent GetEvent(string url)
         {
-            var sdoc = Client.Load(url);
-            var contents = sdoc.DocumentNode.SelectNodes("//table//td");
-            return new AcademicEvent
+            var document = Client.Load(url);
+            var tds = document.DocumentNode.SelectNodes("//table//td");
+
+            var id = HttpUtility.ParseQueryString(new Uri(url).Query)["article_no"];
+            var summary = tds.ElementAt(0).InnerText;
+            var startDate = DateTime.Parse(tds.ElementAt(1).InnerText);
+            var description = WebUtility.HtmlDecode(tds.ElementAt(2).InnerText);
+
+            return new CalendarEvent
             {
-                Url = url,
-                Title = contents.ElementAt(0).InnerText,
-                Begin = DateTime.Parse(contents.ElementAt(1).InnerText),
-                Content = WebUtility.HtmlDecode(contents.ElementAt(2).InnerText),
-            }.ToCalendarEvent();
+                Uid = id,
+                Summary = summary,
+                DtStart = new CalDateTime(startDate),
+                DtEnd = new CalDateTime(ParseEndDate().AddDays(1)),
+                Description = description,
+            };
+
+            DateTime ParseEndDate()
+            {
+                var match = Regex.Match(description, @"^\s*(?:\d+\.\d+|\d+\/\d+|\d+)[^\d]+(\d+\.\d+|\d+\/\d+|\d+)");
+                if (!match.Success)
+                {
+                    return startDate;
+                }
+
+                var monthDay = match.Groups[1].Value.Split('.', '/');
+                var month = monthDay.Length > 1 ? int.Parse(monthDay[0]) : startDate.Month;
+                var day = int.Parse(monthDay[monthDay.Length > 1 ? 1 : 0]);
+
+                try
+                {
+                    var endDate = new DateTime(startDate.Year, month, day);
+                    if (month < startDate.Month)
+                    {
+                        endDate = endDate.AddYears(1);
+                    }
+                    if (day < endDate.Day)
+                    {
+                        endDate = endDate.AddMonths(1);
+                    }
+
+                    if (endDate < startDate)
+                    {
+                        return startDate;
+                    }
+
+                    return endDate;
+                }
+                catch (ArgumentOutOfRangeException)
+                {
+                    return startDate;
+                }
+            }
         }
 
         private static async Task<T> RunWithRetriesAsync<T>(Func<T> func)
