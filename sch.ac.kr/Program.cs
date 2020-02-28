@@ -40,8 +40,7 @@ namespace sch_academic_calendar
             // If no dest specified, dump iCalendar data to standard output and exit.
             if (dest == null)
             {
-                Console.WriteLine(new CalendarSerializer(calendar).SerializeToString());
-                return;
+                goto DUMP;
             }
 
             // Second, fork old calendar and update it using new calendar.
@@ -52,7 +51,7 @@ namespace sch_academic_calendar
             }
             try
             {
-                var oldCalendar = Calendar.Load(await File.ReadAllTextAsync(dest));
+                var oldCalendar = await app.GetOfflineCalendarAsync();
 
                 // Filter old events that may need update.
                 var lowerBound = calendar.Events.FirstOrDefault(i => oldCalendar.Events[i.Uid] != default);
@@ -104,7 +103,7 @@ namespace sch_academic_calendar
 
         DUMP:
             // Dump iCalendar data to dest and exit.
-            await File.WriteAllTextAsync(dest, new CalendarSerializer(calendar).SerializeToString());
+            await app.SaveCalendarAsync(calendar);
         }
     }
 }

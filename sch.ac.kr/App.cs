@@ -41,5 +41,21 @@ namespace sch_academic_calendar
             }
             return calendar;
         }
+
+        public Task SaveCalendarAsync(Calendar calendar)
+        {
+            var filename = Options.FileName ?? Options.OutputFileName;
+            using var stream = filename == null
+                ? Console.OpenStandardOutput()
+                : File.OpenWrite(filename);
+            using var writer = new StreamWriter(stream);
+            return writer.WriteAsync(new CalendarSerializer(calendar).SerializeToString());
+        }
+
+        public async Task<Calendar> GetOfflineCalendarAsync()
+        {
+            var filename = Options.FileName ?? Options.InputFileName;
+            return Calendar.Load(await File.ReadAllTextAsync(filename));
+        }
     }
 }
