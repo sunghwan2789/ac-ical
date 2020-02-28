@@ -3,7 +3,7 @@ using Ical.Net.CalendarComponents;
 
 namespace sch_academic_calendar
 {
-    class BotOptions
+    class CalendarServiceOptions
     {
         /// <summary>
         /// Minimum value of elapsed time since <see cref="CalendarEvent.DtStart"/>

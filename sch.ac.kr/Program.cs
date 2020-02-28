@@ -9,17 +9,17 @@ namespace sch_academic_calendar
     {
         static async Task Main(string[] args)
         {
-            var manager = new Manager(new ManagerOptions
+            var manager = new CalendarManager(new CalendarManagerOptions
             {
                 FileName = args.FirstOrDefault(),
             });
-            var bot = new Bot(new BotOptions());
+            var service = new CalendarService(new CalendarServiceOptions());
 
             // First, get an online calendar.
             Calendar incoming;
             try
             {
-                incoming = await bot.GetCalendarAsync();
+                incoming = await service.GetCalendarAsync();
             }
             // An online calendar is required. Abort.
             catch (Exception ex)

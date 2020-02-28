@@ -8,14 +8,14 @@ using Ical.Net.Serialization;
 
 namespace sch_academic_calendar
 {
-    class Manager
+    class CalendarManager
     {
-        public Manager(ManagerOptions options)
+        public CalendarManager(CalendarManagerOptions options)
         {
             Options = options;
         }
 
-        private ManagerOptions Options { get; }
+        private CalendarManagerOptions Options { get; }
 
         public Calendar? Calendar { get; private set; }
 

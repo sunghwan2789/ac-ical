@@ -9,14 +9,14 @@ using Ical.Net.CalendarComponents;
 
 namespace sch_academic_calendar
 {
-    class Bot
+    class CalendarService
     {
-        public Bot(BotOptions options)
+        public CalendarService(CalendarServiceOptions options)
         {
             Options = options;
         }
 
-        private BotOptions Options { get; }
+        private CalendarServiceOptions Options { get; }
         private HtmlWeb Client { get; } = new HtmlWeb();
 
         public async Task<Calendar> GetCalendarAsync()
@@ -24,7 +24,7 @@ namespace sch_academic_calendar
             var calendar = new Calendar();
             try
             {
-                await GetCalendarEventsAsync().ForEachAsync(calendar.Events.Add);
+                await GetEventsAsync().ForEachAsync(calendar.Events.Add);
             }
             // If it fails, just warn the reason and use some events we got before the exception.
             catch (Exception ex)
@@ -39,10 +39,10 @@ namespace sch_academic_calendar
             return calendar;
         }
 
-        public IAsyncEnumerable<CalendarEvent> GetCalendarEventsAsync() =>
-            GetCalenderEventsExAsync().Reverse();
+        public IAsyncEnumerable<CalendarEvent> GetEventsAsync() =>
+            GetEventsExAsync().Reverse();
 
-        private async IAsyncEnumerable<CalendarEvent> GetCalenderEventsExAsync()
+        private async IAsyncEnumerable<CalendarEvent> GetEventsExAsync()
         {
             var seedUrl = "https://homepage.sch.ac.kr/sch/05/05010001.jsp?mode=list&board_no=20110224223754285127";
             var baseUri = new Uri(seedUrl);
@@ -90,7 +90,7 @@ namespace sch_academic_calendar
             }
         }
 
-        static async Task<T> RunWithRetriesAsync<T>(Func<T> func)
+        private static async Task<T> RunWithRetriesAsync<T>(Func<T> func)
         {
             var delays = new[] { 1000, 5000, 10000, 30000, 60000, };
             var exceptions = new List<Exception>();
