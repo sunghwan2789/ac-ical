@@ -1,10 +1,7 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.Serialization;
@@ -42,14 +39,18 @@ namespace sch_academic_calendar
             return calendar;
         }
 
-        public Task SaveCalendarAsync(Calendar calendar)
+        public bool ShouldSync() =>
+            Options.LoadInput
+            && File.Exists(Options.FileName ?? Options.InputFileName);
+
+        public async Task SaveCalendarAsync(Calendar calendar)
         {
             var filename = Options.FileName ?? Options.OutputFileName;
             using var stream = filename == null
                 ? Console.OpenStandardOutput()
                 : File.OpenWrite(filename);
             using var writer = new StreamWriter(stream);
-            return writer.WriteAsync(new CalendarSerializer(calendar).SerializeToString());
+            await writer.WriteAsync(new CalendarSerializer(calendar).SerializeToString());
         }
 
         public async Task<Calendar> GetOfflineCalendarAsync()

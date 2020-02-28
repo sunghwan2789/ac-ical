@@ -1,23 +1,14 @@
 using System;
-using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
-using HtmlAgilityPack;
 using Ical.Net;
-using Ical.Net.CalendarComponents;
-using Ical.Net.Serialization;
 
 namespace sch_academic_calendar
 {
     class Program
     {
-        static readonly HtmlWeb client = new HtmlWeb();
-
         static async Task Main(string[] args)
         {
-            var calendar = new Calendar();
             var dest = args.FirstOrDefault();
 
             var app = new App(new AppOptions
@@ -26,6 +17,7 @@ namespace sch_academic_calendar
             }, new Bot(new BotOptions()));
 
             // First, grab online calendar events.
+            Calendar calendar;
             try
             {
                 calendar = await app.GetOnlineCalendarAsync();
@@ -37,18 +29,12 @@ namespace sch_academic_calendar
                 return;
             }
 
-            // If no dest specified, dump iCalendar data to standard output and exit.
-            if (dest == null)
+            if (!app.ShouldSync())
             {
                 goto DUMP;
             }
 
             // Second, fork old calendar and update it using new calendar.
-            if (!File.Exists(dest))
-            {
-                Console.Error.WriteLine("iCalendar file is clean. Skipping fork...");
-                goto DUMP;
-            }
             try
             {
                 var oldCalendar = await app.GetOfflineCalendarAsync();
