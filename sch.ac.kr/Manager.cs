@@ -8,15 +8,15 @@ using Ical.Net.Serialization;
 
 namespace sch_academic_calendar
 {
-    class App
+    class Manager
     {
-        public App(AppOptions options, Bot bot)
+        public Manager(ManagerOptions options, Bot bot)
         {
             Options = options;
             Bot = bot;
         }
 
-        private AppOptions Options { get; }
+        private ManagerOptions Options { get; }
         private Bot Bot { get; }
         public Calendar? WorkingCalendar { get; private set; }
 

@@ -2,13 +2,13 @@ using System;
 
 namespace sch_academic_calendar
 {
-    class AppOptions
+    class ManagerOptions
     {
         /// <summary>
         /// Filename of the old iCalendar.
         /// </summary>
         /// <remarks>
-        /// If this is <c>null</c>, <see cref="App"/> will not load the old iCalendar.
+        /// If this is <c>null</c>, <see cref="Manager"/> will not load the old iCalendar.
         /// </remarks>
         public string? InputFileName { get; set; }
 
@@ -16,7 +16,7 @@ namespace sch_academic_calendar
         /// Filename to save the new iCalendar.
         /// </summary>
         /// <remarks>
-        /// If this is <c>null</c>, <see cref="App"/> will write the new iCalendar to stdout.
+        /// If this is <c>null</c>, <see cref="Manager"/> will write the new iCalendar to stdout.
         /// </remarks>
         public string? OutputFileName { get; set; }
 

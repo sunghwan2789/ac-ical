@@ -9,7 +9,7 @@ namespace sch_academic_calendar
     {
         static async Task Main(string[] args)
         {
-            var app = new App(new AppOptions
+            var manager = new Manager(new ManagerOptions
             {
                 FileName = args.FirstOrDefault(),
             }, new Bot(new BotOptions()));
@@ -18,7 +18,7 @@ namespace sch_academic_calendar
             Calendar incoming;
             try
             {
-                incoming = await app.GetOnlineCalendarAsync();
+                incoming = await manager.GetOnlineCalendarAsync();
             }
             // An online calendar is required. Abort.
             catch (Exception ex)
@@ -29,28 +29,28 @@ namespace sch_academic_calendar
             }
 
             // If a local calendar is clean, save the online calendar and exit.
-            if (app.IsClean())
+            if (manager.IsClean())
             {
-                await app.SaveAsync(incoming);
+                await manager.SaveAsync(incoming);
                 return;
             }
 
             // Second, get a local calendar.
             try
             {
-                await app.LoadAsync();
+                await manager.LoadAsync();
             }
             // Corrupted, save the online calendar and exit.
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Exception thrown while reading old calendar: {ex.Message}\n{ex}");
-                await app.SaveAsync(incoming);
+                await manager.SaveAsync(incoming);
                 return;
             }
 
             // Third, merge the online calendar into the local calendar.
-            app.Merge(incoming);
-            await app.SaveAsync();
+            manager.Merge(incoming);
+            await manager.SaveAsync();
         }
     }
 }
