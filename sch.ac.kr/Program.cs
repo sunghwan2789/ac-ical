@@ -53,47 +53,11 @@ namespace sch_academic_calendar
             {
                 var oldCalendar = await app.GetOfflineCalendarAsync();
 
-                // Filter old events that may need update.
-                var lowerBound = calendar.Events.FirstOrDefault(i => oldCalendar.Events[i.Uid] != default);
-                if (lowerBound == null)
-                {
-                    Console.Error.WriteLine("Lost the synchronization point event. Skipping fork...");
-                    goto DUMP;
-                }
-                var updatingEvents = oldCalendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
-
-                // Remove removed events in old events.
-                updatingEvents.Except(calendar.Events, hasSameUid)
-                    .ToList()
-                    .ForEach(i => oldCalendar.Events.Remove(i));
-
-                // Update old events and increase edit count.
-                updatingEvents.Intersect(calendar.Events, hasSameUid)
-                    .Select(i => (i, calendar.Events[i.Uid]))
-                    .ToList()
-                    .ForEach(t =>
-                    {
-                        var (oldEvent, newEvent) = t;
-                        if (!oldEvent.Equals(newEvent))
-                        {
-                            oldEvent.Summary = newEvent.Summary;
-                            oldEvent.DtStart = newEvent.DtStart;
-                            oldEvent.DtEnd = newEvent.DtEnd;
-                            oldEvent.Description = newEvent.Description;
-                            oldEvent.DtStamp = newEvent.DtStamp;
-                            oldEvent.Sequence++;
-                        }
-                    });
-
-                // Add new events.
-                calendar.Events.Except(updatingEvents, hasSameUid)
-                    .ToList()
-                    .ForEach(i => oldCalendar.Events.Add(i));
+                app.Sync(oldCalendar, calendar);
 
                 // Swap.
                 calendar = oldCalendar;
 
-                bool hasSameUid(CalendarEvent a, CalendarEvent b) => a.Uid == b.Uid;
             }
             // If the old calendar does not exists or it is corrupted, use new one as a result.
             catch (Exception ex)

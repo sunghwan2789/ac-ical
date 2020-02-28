@@ -57,5 +57,47 @@ namespace sch_academic_calendar
             var filename = Options.FileName ?? Options.InputFileName;
             return Calendar.Load(await File.ReadAllTextAsync(filename));
         }
+
+        public void Sync(Calendar calendar, Calendar incoming)
+        {
+            // Filter old events that may need update.
+            var lowerBound = incoming.Events.FirstOrDefault(i => calendar.Events[i.Uid] != null);
+            if (lowerBound == null)
+            {
+                Console.Error.WriteLine("Lost the synchronization point event. Skipping fork...");
+                return;
+            }
+            var updatingEvents = calendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
+
+            // Remove removed events in old events.
+            updatingEvents.Except(incoming.Events, HaveSameUid)
+                .ToList()
+                .ForEach(i => calendar.Events.Remove(i));
+
+            // Update old events and increase edit count.
+            updatingEvents.Intersect(incoming.Events, HaveSameUid)
+                .Select(i => (i, incoming.Events[i.Uid]))
+                .ToList()
+                .ForEach(t =>
+                {
+                    var (oldEvent, newEvent) = t;
+                    if (!oldEvent.Equals(newEvent))
+                    {
+                        oldEvent.Summary = newEvent.Summary;
+                        oldEvent.DtStart = newEvent.DtStart;
+                        oldEvent.DtEnd = newEvent.DtEnd;
+                        oldEvent.Description = newEvent.Description;
+                        oldEvent.DtStamp = newEvent.DtStamp;
+                        oldEvent.Sequence++;
+                    }
+                });
+
+            // Add new events.
+            incoming.Events.Except(updatingEvents, HaveSameUid)
+                .ToList()
+                .ForEach(i => calendar.Events.Add(i));
+
+            bool HaveSameUid(CalendarEvent a, CalendarEvent b) => a.Uid == b.Uid;
+        }
     }
 }
