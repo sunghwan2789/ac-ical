@@ -49,24 +49,16 @@ namespace sch_academic_calendar
             for (; ; )
             {
                 Console.Error.WriteLine(seedUrl);
-                var doc = Client.Load(seedUrl);
+                var doc = await Client.LoadFromWebAsync(seedUrl);
 
                 foreach (var scheduleAnchor in doc.DocumentNode.SelectNodes("//table//a"))
                 {
-                    var scheduleUri = new Uri(baseUri, scheduleAnchor.Attributes["href"].DeEntitizeValue);
+                    var eventUrl = new Uri(baseUri, scheduleAnchor.Attributes["href"].DeEntitizeValue).ToString();
 
                     var acevent = await RunWithRetriesAsync(() =>
                     {
-                        Console.Error.WriteLine(scheduleUri);
-                        var sdoc = Client.Load(scheduleUri);
-                        var contents = sdoc.DocumentNode.SelectNodes("//table//td");
-                        return new AcademicEvent
-                        {
-                            Url = scheduleUri.ToString(),
-                            Title = contents.ElementAt(0).InnerText,
-                            Begin = DateTime.Parse(contents.ElementAt(1).InnerText),
-                            Content = WebUtility.HtmlDecode(contents.ElementAt(2).InnerText),
-                        }.ToCalendarEvent();
+                        Console.Error.WriteLine(eventUrl);
+                        return GetEvent(eventUrl);
                     });
 
                     // Ignore events that would not be changed.
@@ -88,6 +80,19 @@ namespace sch_academic_calendar
 
                 seedUrl = new Uri(baseUri, next.Attributes["href"].DeEntitizeValue).ToString();
             }
+        }
+
+        public CalendarEvent GetEvent(string url)
+        {
+            var sdoc = Client.Load(url);
+            var contents = sdoc.DocumentNode.SelectNodes("//table//td");
+            return new AcademicEvent
+            {
+                Url = url,
+                Title = contents.ElementAt(0).InnerText,
+                Begin = DateTime.Parse(contents.ElementAt(1).InnerText),
+                Content = WebUtility.HtmlDecode(contents.ElementAt(2).InnerText),
+            }.ToCalendarEvent();
         }
 
         private static async Task<T> RunWithRetriesAsync<T>(Func<T> func)
