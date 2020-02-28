@@ -51,20 +51,20 @@ namespace sch_academic_calendar
             var baseUri = new Uri(seedUrl);
             for (; ; )
             {
-                var document = await RunWithRetriesAsync(() =>
+                var document = await RunWithRetriesAsync(async () =>
                 {
                     Console.Error.WriteLine(seedUrl);
-                    return Client.Load(seedUrl);
+                    return await Client.LoadFromWebAsync(seedUrl);
                 });
 
                 foreach (var eventAnchor in document.DocumentNode.SelectNodes("//table//a"))
                 {
                     var eventUrl = new Uri(baseUri, eventAnchor.Attributes["href"].DeEntitizeValue).ToString();
 
-                    var evnt = await RunWithRetriesAsync(() =>
+                    var evnt = await RunWithRetriesAsync(async () =>
                     {
                         Console.Error.WriteLine(eventUrl);
-                        return GetEvent(eventUrl);
+                        return await GetEventAsync(eventUrl);
                     });
 
                     // Ignore events that would not be changed.
@@ -88,9 +88,9 @@ namespace sch_academic_calendar
             }
         }
 
-        public CalendarEvent GetEvent(string url)
+        public async Task<CalendarEvent> GetEventAsync(string url)
         {
-            var document = Client.Load(url);
+            var document = await Client.LoadFromWebAsync(url);
             var tds = document.DocumentNode.SelectNodes("//table//td");
 
             var id = HttpUtility.ParseQueryString(new Uri(url).Query)["article_no"];
@@ -145,7 +145,7 @@ namespace sch_academic_calendar
             }
         }
 
-        private static async Task<T> RunWithRetriesAsync<T>(Func<T> func)
+        private static async Task<T> RunWithRetriesAsync<T>(Func<Task<T>> func)
         {
             var delays = new[] { 1000, 5000, 10000, 30000, 60000, };
             var exceptions = new List<Exception>();
@@ -154,7 +154,7 @@ namespace sch_academic_calendar
                 await Task.Delay(delay);
                 try
                 {
-                    return func();
+                    return await func();
                 }
                 catch (Exception ex)
                 {
