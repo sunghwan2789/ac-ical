@@ -64,8 +64,7 @@ namespace sch_academic_calendar
             var lowerBound = incoming.Events.FirstOrDefault(i => Calendar.Events[i.Uid] != null);
             if (lowerBound == null)
             {
-                Console.Error.WriteLine("Lost the synchronization point event. Skipping fork...");
-                return;
+                throw new Exception("Synchronization point event not found.");
             }
             var updatingEvents = Calendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
 
