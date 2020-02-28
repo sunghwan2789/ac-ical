@@ -18,6 +18,7 @@ namespace sch_academic_calendar
 
         private AppOptions Options { get; }
         private Bot Bot { get; }
+        public Calendar? WorkingCalendar { get; private set; }
 
         public async Task<Calendar> GetOnlineCalendarAsync()
         {
@@ -39,11 +40,11 @@ namespace sch_academic_calendar
             return calendar;
         }
 
-        public bool ShouldUpdate() =>
-            Options.LoadInput
-            && File.Exists(Options.FileName ?? Options.InputFileName);
+        public bool IsClean() =>
+            !Options.LoadInput
+            || !File.Exists(Options.FileName ?? Options.InputFileName);
 
-        public async Task SaveCalendarAsync(Calendar calendar)
+        public async Task SaveAsync(Calendar calendar)
         {
             var filename = Options.FileName ?? Options.OutputFileName;
             using var stream = filename == null
@@ -53,27 +54,46 @@ namespace sch_academic_calendar
             await writer.WriteAsync(new CalendarSerializer(calendar).SerializeToString());
         }
 
+        public Task SaveAsync()
+        {
+            if (WorkingCalendar == null)
+            {
+                throw new NullReferenceException(nameof(WorkingCalendar));
+            }
+            return SaveAsync(WorkingCalendar);
+        }
+
+        public async Task LoadAsync()
+        {
+            WorkingCalendar = await GetLocalCalendarAsync();
+        }
+
         public async Task<Calendar> GetLocalCalendarAsync()
         {
             var filename = Options.FileName ?? Options.InputFileName;
             return Calendar.Load(await File.ReadAllTextAsync(filename));
         }
 
-        public void Merge(Calendar incoming, Calendar calendar)
+        public void Merge(Calendar incoming)
         {
+            if (WorkingCalendar == null)
+            {
+                throw new NullReferenceException(nameof(WorkingCalendar));
+            }
+
             // Filter old events that may need update.
-            var lowerBound = incoming.Events.FirstOrDefault(i => calendar.Events[i.Uid] != null);
+            var lowerBound = incoming.Events.FirstOrDefault(i => WorkingCalendar.Events[i.Uid] != null);
             if (lowerBound == null)
             {
                 Console.Error.WriteLine("Lost the synchronization point event. Skipping fork...");
                 return;
             }
-            var updatingEvents = calendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
+            var updatingEvents = WorkingCalendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
 
             // Remove removed events in old events.
             updatingEvents.Except(incoming.Events, HaveSameUid)
                 .ToList()
-                .ForEach(i => calendar.Events.Remove(i));
+                .ForEach(i => WorkingCalendar.Events.Remove(i));
 
             // Update old events and increase edit count.
             updatingEvents.Intersect(incoming.Events, HaveSameUid)
@@ -96,7 +116,7 @@ namespace sch_academic_calendar
             // Add new events.
             incoming.Events.Except(updatingEvents, HaveSameUid)
                 .ToList()
-                .ForEach(i => calendar.Events.Add(i));
+                .ForEach(i => WorkingCalendar.Events.Add(i));
 
             bool HaveSameUid(CalendarEvent a, CalendarEvent b) => a.Uid == b.Uid;
         }

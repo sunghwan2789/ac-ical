@@ -28,30 +28,29 @@ namespace sch_academic_calendar
                 return;
             }
 
-            // If we don't need update, save it and exit.
-            if (!app.ShouldUpdate())
+            // If a local calendar is clean, save the online calendar and exit.
+            if (app.IsClean())
             {
-                await app.SaveCalendarAsync(incoming);
+                await app.SaveAsync(incoming);
                 return;
             }
 
             // Second, get a local calendar.
-            Calendar calendar;
             try
             {
-                calendar = await app.GetLocalCalendarAsync();
+                await app.LoadAsync();
             }
             // Corrupted, save the online calendar and exit.
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Exception thrown while reading old calendar: {ex.Message}\n{ex}");
-                await app.SaveCalendarAsync(incoming);
+                await app.SaveAsync(incoming);
                 return;
             }
 
             // Third, merge the online calendar into the local calendar.
-            app.Merge(incoming, calendar);
-            await app.SaveCalendarAsync(calendar);
+            app.Merge(incoming);
+            await app.SaveAsync();
         }
     }
 }
