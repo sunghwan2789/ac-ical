@@ -48,8 +48,11 @@ namespace sch_academic_calendar
             var baseUri = new Uri(seedUrl);
             for (; ; )
             {
-                Console.Error.WriteLine(seedUrl);
-                var doc = await Client.LoadFromWebAsync(seedUrl);
+                var doc = await RunWithRetriesAsync(() =>
+                {
+                    Console.Error.WriteLine(seedUrl);
+                    return Client.Load(seedUrl);
+                });
 
                 foreach (var scheduleAnchor in doc.DocumentNode.SelectNodes("//table//a"))
                 {
