@@ -7,9 +7,9 @@ using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.Serialization;
 
-namespace sch_academic_calendar
+namespace sch.ac.kr
 {
-    class CalendarManager
+    public class CalendarManager
     {
         public CalendarManager(IOptions<CalendarManagerOptions> options)
         {
@@ -62,8 +62,10 @@ namespace sch_academic_calendar
                 throw new InvalidOperationException(nameof(Calendar));
             }
 
-            // TODO: Check updatingEvents include a newer event than incoming's and remove it.
-            var lowerBound = incoming.Events.First(i => Calendar.Events[i.Uid] != default);
+            // TODO: Find a synchronization point.
+            // * from uid(sort by dtstart asc, uid asc)
+            // * from dtstart(skip while cal.dtstart <= in.dtstart)
+            var lowerBound = incoming.Events.First(i => Calendar.Events[i.Uid] != null);
             // Filter old events that may need update.
             var updatingEvents = Calendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
 

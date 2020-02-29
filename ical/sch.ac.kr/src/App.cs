@@ -1,9 +1,9 @@
 using System;
 using System.Threading.Tasks;
 
-namespace sch_academic_calendar
+namespace sch.ac.kr
 {
-    class App
+    public class App
     {
         public App(CalendarManager manager, CalendarService service)
         {

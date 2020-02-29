@@ -11,9 +11,9 @@ using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 
-namespace sch_academic_calendar
+namespace sch.ac.kr
 {
-    class CalendarService
+    public class CalendarService
     {
         public CalendarService(IOptions<CalendarServiceOptions> options)
         {

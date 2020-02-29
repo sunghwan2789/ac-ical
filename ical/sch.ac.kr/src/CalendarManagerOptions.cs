@@ -1,8 +1,8 @@
 using System;
 
-namespace sch_academic_calendar
+namespace sch.ac.kr
 {
-    class CalendarManagerOptions
+    public class CalendarManagerOptions
     {
         /// <summary>
         /// Filename of the old iCalendar.

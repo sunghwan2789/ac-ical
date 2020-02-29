@@ -3,9 +3,6 @@
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>sch_academic_calendar</RootNamespace>
-    <NoWarn>NU1605</NoWarn>
-    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>

@@ -1,9 +1,9 @@
 using System;
 using Ical.Net.CalendarComponents;
 
-namespace sch_academic_calendar
+namespace sch.ac.kr
 {
-    class CalendarServiceOptions
+    public class CalendarServiceOptions
     {
         /// <summary>
         /// Maximum value of elapsed time since <see cref="CalendarEvent.DtStart"/>

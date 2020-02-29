@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace sch_academic_calendar
+namespace sch.ac.kr
 {
-    static class LinqExtensions
+    public static class LinqExtensions
     {
         /// <summary>
         /// Returns all items in the first collection except the ones in the second collection that match the lambda condition

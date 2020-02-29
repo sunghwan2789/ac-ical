@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - .github/workflows/sch.ac.kr.yml
-      - 'sch.ac.kr/**'
+      - 'ical/sch.ac.kr/**'
   schedule:
     # 한국 표준시 오후 2시에 2주 간격으로 실행
     - cron: '0 5 */14 * *'
@@ -20,20 +20,20 @@ jobs:
       - uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 3.1.100
-      - name: Checkout source branch
+      - name: Checkout application branch
         uses: actions/checkout@v2
         with:
-          path: src
+          path: app
       - name: Build
-        run: dotnet build src/$ICAL_SOURCE
-      - name: Checkout destination branch
+        run: dotnet build app/ical/$ICAL_SOURCE
+      - name: Checkout distribution branch
         uses: actions/checkout@v2
         with:
           ref: gh-pages
           token: ${{ secrets.PERSONAL_TOKEN }}
           path: dist
       - name: Update iCalendar file
-        run: dotnet run --project src/$ICAL_SOURCE -- -f dist/ical/$ICAL_SOURCE.ics
+        run: dotnet run -p app/ical/$ICAL_SOURCE/src -- -f dist/ical/$ICAL_SOURCE.ics
       - name: Update metadata file
         run: dist/update-ical.sh
       - name: Commit and push changes
