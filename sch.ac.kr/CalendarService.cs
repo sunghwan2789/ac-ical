@@ -69,7 +69,7 @@ namespace sch_academic_calendar
 
                     // Ignore events that would not be changed.
                     if ((evnt.DtStart.Value < Options.MinimumDtStart)
-                        || (DateTime.Today.Subtract(evnt.DtStart.Value) >= Options.MinimumElapsedTimeSinceDtStartToToday))
+                        || (DateTime.Today.Subtract(evnt.DtStart.Value) >= Options.MaximumElapsedTimeSinceDtStartToToday))
                     {
                         yield break;
                     }

@@ -6,16 +6,16 @@ namespace sch_academic_calendar
     class CalendarServiceOptions
     {
         /// <summary>
-        /// Minimum value of elapsed time since <see cref="CalendarEvent.DtStart"/>
+        /// Maximum value of elapsed time since <see cref="CalendarEvent.DtStart"/>
         /// to <see cref="DateTime.Today"/>.
         /// </summary>
-        public TimeSpan MinimumElapsedTimeSinceDtStartToToday { get; set; } = TimeSpan.FromDays(60);
+        public TimeSpan MaximumElapsedTimeSinceDtStartToToday { get; set; } = TimeSpan.FromDays(60);
 
         /// <summary>
         /// Minimum value of <see cref="CalendarEvent.DtStart"/>.
         /// </summary>
         /// <remarks>
-        /// Overrides <see cref="LowerBoundOfTimeSpanFromTodayToDtStart"/>.
+        /// Overrides <see cref="MaximumElapsedTimeSinceDtStartToToday"/>.
         /// </remarks>
         public DateTime? MinimumDtStart { get; set; }
     }
