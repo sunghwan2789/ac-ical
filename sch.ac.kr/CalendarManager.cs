@@ -62,12 +62,9 @@ namespace sch_academic_calendar
                 throw new InvalidOperationException(nameof(Calendar));
             }
 
+            // TODO: Check updatingEvents include a newer event than incoming's and remove it.
+            var lowerBound = incoming.Events.First(i => Calendar.Events[i.Uid] != default);
             // Filter old events that may need update.
-            var lowerBound = incoming.Events.FirstOrDefault(i => Calendar.Events[i.Uid] != null);
-            if (lowerBound == null)
-            {
-                throw new Exception("Synchronization point event not found.");
-            }
             var updatingEvents = Calendar.Events.SkipWhile(i => i.Uid != lowerBound.Uid);
 
             // Remove removed events in old events.

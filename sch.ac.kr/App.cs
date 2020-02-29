@@ -1,6 +1,5 @@
 using System;
 using System.Threading.Tasks;
-using Ical.Net;
 
 namespace sch_academic_calendar
 {
@@ -18,17 +17,7 @@ namespace sch_academic_calendar
         public async Task RunAsync()
         {
             // First, get an online calendar.
-            Calendar incoming;
-            try
-            {
-                incoming = await Service.GetCalendarAsync();
-            }
-            // An online calendar is required. Abort.
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Exception thrown while getting online calendar: {ex.Message}\n{ex}");
-                throw;
-            }
+            var incoming = await Service.GetCalendarAsync();
 
             // If a local calendar is clean, save the online calendar and exit.
             if (Manager.IsClean())
