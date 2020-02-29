@@ -32,8 +32,8 @@ namespace sch_academic_calendar
         /// Flag to load the old iCalendar or not.
         /// </summary>
         /// <remarks>
-        /// If this is <c>false</c>, <see cref="InputFileName"/> will be ignored.
+        /// If this is <c>true</c>, <see cref="InputFileName"/> will be ignored.
         /// </remarks>
-        public bool LoadInput { get; set; } = true;
+        public bool NullInput { get; set; }
     }
 }

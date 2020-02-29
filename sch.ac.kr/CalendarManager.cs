@@ -20,7 +20,7 @@ namespace sch_academic_calendar
         public Calendar? Calendar { get; private set; }
 
         public bool IsClean() =>
-            !Options.LoadInput
+            Options.NullInput
             || !File.Exists(Options.FileName ?? Options.InputFileName);
 
         public async Task SaveAsync(Calendar calendar)
