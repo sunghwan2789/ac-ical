@@ -27,7 +27,7 @@ namespace sch_academic_calendar
             catch (Exception ex)
             {
                 Console.Error.WriteLine($"Exception thrown while getting online calendar: {ex.Message}\n{ex}");
-                throw ex;
+                throw;
             }
 
             // If a local calendar is clean, save the online calendar and exit.

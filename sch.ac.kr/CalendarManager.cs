@@ -38,8 +38,9 @@ namespace sch_academic_calendar
         {
             if (Calendar == null)
             {
-                throw new NullReferenceException(nameof(Calendar));
+                throw new InvalidOperationException(nameof(Calendar));
             }
+
             return SaveAsync(Calendar);
         }
 
@@ -58,7 +59,7 @@ namespace sch_academic_calendar
         {
             if (Calendar == null)
             {
-                throw new NullReferenceException(nameof(Calendar));
+                throw new InvalidOperationException(nameof(Calendar));
             }
 
             // Filter old events that may need update.
