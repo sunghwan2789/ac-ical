@@ -33,7 +33,7 @@ jobs:
           token: ${{ secrets.PERSONAL_TOKEN }}
           path: dist
       - name: Update iCalendar file
-        run: dotnet run --project src/$ICAL_SOURCE -- dist/ical/$ICAL_SOURCE.ics
+        run: dotnet run --project src/$ICAL_SOURCE -- -f dist/ical/$ICAL_SOURCE.ics
       - name: Update metadata file
         run: dist/update-ical.sh
       - name: Commit and push changes
