@@ -1,57 +1,66 @@
 using System;
-using System.Linq;
+using System.CommandLine;
+using System.CommandLine.Builder;
+using System.CommandLine.Hosting;
+using System.CommandLine.Invocation;
+using System.CommandLine.Parsing;
 using System.Threading.Tasks;
-using Ical.Net;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace sch_academic_calendar
 {
     class Program
     {
-        static async Task Main(string[] args)
+        static Task<int> Main(string[] args)
         {
-            var manager = new CalendarManager(new CalendarManagerOptions
+            var rootCommand = new RootCommand
             {
-                FileName = args.FirstOrDefault(),
+                new Option<string?>(new[] {"-i", "--input"}),
+                new Option<string?>(new[] {"-o", "--output"}),
+                new Option<string?>(new[] {"-f", "--file"}),
+                new Option<bool>(new[] {"-n", "--null-input"}, () => false),
+                new Option<DateTime?>(new[] {"-s", "--start-from"}),
+                new Option<TimeSpan>(new[] {"-M", "--max-elapsed-time"}, () => TimeSpan.FromDays(60)),
+            };
+
+            rootCommand.Handler = CommandHandler.Create(async (IHost host) =>
+            {
+                var app = host.Services.GetRequiredService<App>();
+                await app.RunAsync();
+                return Environment.ExitCode;
             });
-            var service = new CalendarService(new CalendarServiceOptions());
 
-            // First, get an online calendar.
-            Calendar incoming;
-            try
-            {
-                incoming = await service.GetCalendarAsync();
-            }
-            // An online calendar is required. Abort.
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Exception thrown while getting online calendar: {ex.Message}\n{ex}");
-                Environment.ExitCode = 1;
-                return;
-            }
-
-            // If a local calendar is clean, save the online calendar and exit.
-            if (manager.IsClean())
-            {
-                await manager.SaveAsync(incoming);
-                return;
-            }
-
-            // Second, get a local calendar.
-            try
-            {
-                await manager.LoadAsync();
-            }
-            // Corrupted, save the online calendar and exit.
-            catch (Exception ex)
-            {
-                Console.Error.WriteLine($"Exception thrown while reading old calendar: {ex.Message}\n{ex}");
-                await manager.SaveAsync(incoming);
-                return;
-            }
-
-            // Third, merge the online calendar into the local calendar.
-            manager.Merge(incoming);
-            await manager.SaveAsync();
+            return CreateCommandLineBuilder(rootCommand).Build().InvokeAsync(args);
         }
+
+        static CommandLineBuilder CreateCommandLineBuilder(Command rootCommand) =>
+            new CommandLineBuilder(rootCommand)
+                .UseHelp()
+                .UseParseErrorReporting()
+                .UseHost(ConfigureHost);
+
+        static void ConfigureHost(IHostBuilder host) =>
+            host.ConfigureServices(services =>
+            {
+                services.AddOptions<CalendarManagerOptions>()
+                    .Configure<ParseResult>((option, p) =>
+                    {
+                        option.InputFileName = p.ValueForOption<string?>("--input");
+                        option.OutputFileName = p.ValueForOption<string?>("--output");
+                        option.FileName = p.ValueForOption<string?>("--file");
+                        option.NullInput = p.ValueForOption<bool>("--null-input");
+                    });
+                services.AddOptions<CalendarServiceOptions>()
+                    .Configure<ParseResult>((option, p) =>
+                    {
+                        option.MinimumDtStart = p.ValueForOption<DateTime?>("--start-from");
+                        option.MaximumElapsedTimeSinceDtStartToToday =
+                            p.ValueForOption<TimeSpan>("--max-elapsed-time");
+                    });
+                services.AddTransient<CalendarManager>();
+                services.AddSingleton<CalendarService>();
+                services.AddSingleton<App>();
+            });
     }
 }

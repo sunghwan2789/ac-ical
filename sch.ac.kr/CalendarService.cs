@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
+using Microsoft.Extensions.Options;
 using HtmlAgilityPack;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
@@ -14,9 +15,9 @@ namespace sch_academic_calendar
 {
     class CalendarService
     {
-        public CalendarService(CalendarServiceOptions options)
+        public CalendarService(IOptions<CalendarServiceOptions> options)
         {
-            Options = options;
+            Options = options.Value;
         }
 
         private CalendarServiceOptions Options { get; }

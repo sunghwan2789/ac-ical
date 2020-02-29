@@ -9,7 +9,7 @@ namespace sch_academic_calendar
         /// Maximum value of elapsed time since <see cref="CalendarEvent.DtStart"/>
         /// to <see cref="DateTime.Today"/>.
         /// </summary>
-        public TimeSpan MaximumElapsedTimeSinceDtStartToToday { get; set; } = TimeSpan.FromDays(60);
+        public TimeSpan MaximumElapsedTimeSinceDtStartToToday { get; set; }
 
         /// <summary>
         /// Minimum value of <see cref="CalendarEvent.DtStart"/>.

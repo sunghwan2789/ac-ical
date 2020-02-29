@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Options;
 using Ical.Net;
 using Ical.Net.CalendarComponents;
 using Ical.Net.Serialization;
@@ -10,9 +11,9 @@ namespace sch_academic_calendar
 {
     class CalendarManager
     {
-        public CalendarManager(CalendarManagerOptions options)
+        public CalendarManager(IOptions<CalendarManagerOptions> options)
         {
-            Options = options;
+            Options = options.Value;
         }
 
         private CalendarManagerOptions Options { get; }
