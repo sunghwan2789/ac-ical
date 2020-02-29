@@ -7,6 +7,7 @@ using System.CommandLine.Parsing;
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace sch_academic_calendar
 {
@@ -38,29 +39,29 @@ namespace sch_academic_calendar
             new CommandLineBuilder(rootCommand)
                 .UseHelp()
                 .UseParseErrorReporting()
-                .UseHost(ConfigureHost);
+                .UseHost(Host.CreateDefaultBuilder, ConfigureHost);
 
         static void ConfigureHost(IHostBuilder host) =>
             host.ConfigureServices(services =>
-            {
-                services.AddOptions<CalendarManagerOptions>()
-                    .Configure<ParseResult>((option, p) =>
-                    {
-                        option.InputFileName = p.ValueForOption<string?>("--input");
-                        option.OutputFileName = p.ValueForOption<string?>("--output");
-                        option.FileName = p.ValueForOption<string?>("--file");
-                        option.NullInput = p.ValueForOption<bool>("--null-input");
-                    });
-                services.AddOptions<CalendarServiceOptions>()
-                    .Configure<ParseResult>((option, p) =>
-                    {
-                        option.MinimumDtStart = p.ValueForOption<DateTime?>("--start-from");
-                        option.MaximumElapsedTimeSinceDtStartToToday =
-                            p.ValueForOption<TimeSpan>("--max-elapsed-time");
-                    });
-                services.AddTransient<CalendarManager>();
-                services.AddSingleton<CalendarService>();
-                services.AddSingleton<App>();
-            });
+                {
+                    services.AddOptions<CalendarManagerOptions>()
+                        .Configure<ParseResult>((option, p) =>
+                        {
+                            option.InputFileName = p.ValueForOption<string?>("--input");
+                            option.OutputFileName = p.ValueForOption<string?>("--output");
+                            option.FileName = p.ValueForOption<string?>("--file");
+                            option.NullInput = p.ValueForOption<bool>("--null-input");
+                        });
+                    services.AddOptions<CalendarServiceOptions>()
+                        .Configure<ParseResult>((option, p) =>
+                        {
+                            option.MinimumDtStart = p.ValueForOption<DateTime?>("--start-from");
+                            option.MaximumElapsedTimeSinceDtStartToToday =
+                                p.ValueForOption<TimeSpan>("--max-elapsed-time");
+                        });
+                    services.AddTransient<CalendarManager>();
+                    services.AddSingleton<CalendarService>();
+                    services.AddSingleton<App>();
+                });
     }
 }
