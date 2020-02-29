@@ -75,20 +75,17 @@ namespace sch_academic_calendar
 
             // Update old events and increase edit count.
             updatingEvents.Intersect(incoming.Events, HaveSameUid)
-                .Select(i => (i, incoming.Events[i.Uid]))
+                .Where(i => !i.Equals(incoming.Events[i.Uid]))
                 .ToList()
-                .ForEach(t =>
+                .ForEach(i =>
                 {
-                    var (oldEvent, newEvent) = t;
-                    if (!oldEvent.Equals(newEvent))
-                    {
-                        oldEvent.Summary = newEvent.Summary;
-                        oldEvent.DtStart = newEvent.DtStart;
-                        oldEvent.DtEnd = newEvent.DtEnd;
-                        oldEvent.Description = newEvent.Description;
-                        oldEvent.DtStamp = newEvent.DtStamp;
-                        oldEvent.Sequence++;
-                    }
+                    var incomingEvent = incoming.Events[i.Uid];
+                    i.Summary = incomingEvent.Summary;
+                    i.DtStart = incomingEvent.DtStart;
+                    i.DtEnd = incomingEvent.DtEnd;
+                    i.Description = incomingEvent.Description;
+                    i.DtStamp = incomingEvent.DtStamp;
+                    i.Sequence++;
                 });
 
             // Add new events.
