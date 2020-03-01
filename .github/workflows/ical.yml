@@ -4,7 +4,7 @@ on:
   push:
     paths:
       - .github/workflows/ical.yml
-      - 'ical/*'
+      - 'ical/*.json'
 
 jobs:
   update:
